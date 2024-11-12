@@ -87,15 +87,47 @@ def goals():
                 st.warning("Dont you have goals?")
 
 @st.fragment()
+def notes():
+    st.header("Notes")
+
+    for i, note in enumerate(st.session_state.notes):
+        cols = st.columns([5, 1])
+        
+        with cols[0]:
+            st.text(note.get("text"))
+        with cols[1]:
+            if st.button("Delete", key=i):
+                delete_note(note.get("_id"))
+
+                # delete from session states
+                st.session_state.notes.pop(i)
+                st.rerun()
+
+    new_note_input = st.text_input("Add a new note")
+    if st.button("Add note"):
+        if new_note_input:
+            new_note = add_note(new_note_input, st.session_state.profile_id)
+            st.session_state.notes.append(new_note)
+            st.rerun()
+
+@st.fragment()
 def generate_result():
     profile = st.session_state.profile
+    notes = st.session_state.notes
+    notes_str = []
+
+    for i, note in enumerate(notes):
+        notes_str.append(note.get("text"))
 
     container = st.container(border=True)
     container.header("Generate AI Recommendation")
     if container.button("Generate"):
-        result = run_main_flow(profile=profile.get("social_data"), goals=", ".join(profile.get("goals")))
+        result = run_main_flow(
+            profile=profile.get("social_data"), 
+            goals=", ".join(profile.get("goals")),
+            notes=", ".join(notes_str),
+        )
         result_json = json.loads(result)
-        print(result_json)
         container.success("Successfully generated recommendation")
 
         container.markdown("Recommendation")
@@ -134,6 +166,19 @@ def generate_result():
             </div>
             """, unsafe_allow_html=True)
 
+@st.fragment
+def askAI():
+    profile = st.session_state.profile
+
+    st.subheader("Ask AI Questions")
+    question_input = st.text_area("Ask Question Here")
+
+    if st.button("Ask AI"):
+        with st.spinner():
+            result = ask_ai(profile=profile, question=question_input)
+            print("RESULT", result)
+            st.write(result)
+
 def start():
     if "profile" not in st.session_state:
         profile_id = 1 # make it unique later on
@@ -151,7 +196,9 @@ def start():
 
     forms()
     goals()
+    notes()
     generate_result()
+    askAI()
 
 if __name__ == "__main__":
     start()

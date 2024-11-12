@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from langflow.load import run_flow_from_json
 import os
 import requests
+import pprint
 from typing import Optional
 
 load_dotenv() 
@@ -29,21 +30,28 @@ def ask_ai(profile, question):
         tweaks=TWEAKS
     )
 
-    return result[0].outputs[0].results["text"].data["text"]
+    for output in result[0].outputs:
+        msg = output.results["text"].text
+        if msg:
+            response_text = msg
+            break
+
+    return response_text
 
 # -------------------------
 # ------ MAIN FLOW --------
 # -------------------------
 
-def run_main_flow(goals, profile):
-    print(goals, profile)
-
+def run_main_flow(goals, profile, notes):
     TWEAKS = {
         "TextInput-dmFn6": {
             "input_value": goals
         },
         "TextInput-NiTSR": {
             "input_value": profile
+        },
+        "TextInput-C5PH0": {
+            "input_value": notes,
         },
     }
 

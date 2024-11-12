@@ -18,11 +18,11 @@ db = get_db()
 collections = ["social_data", "notes"]
 
 # just in case collection does not exist, create
-for value in collections:
-    try:
-        db.create_collection(value)
-    except:
-        pass
+# for value in collections:
+#     try:
+#         db.create_collection(value)
+#     except:
+#         pass
 
 social_data_collection = db.get_collection("social_data")
 notes_collection = db.get_collection("notes")
